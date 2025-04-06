@@ -41,7 +41,17 @@ sector_etfs = ["XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "
 
 @st.cache_data
 def download_price_data(tickers, start, end):
-    return yf.download(tickers, start=start, end=end, auto_adjust=True, progress=False)["Close"].dropna(axis=1, how='all')
+    valid_prices = {}
+    for symbol in tickers:
+        try:
+            df = yf.download(symbol, start=start, end=end, auto_adjust=True, progress=False)
+            if not df.empty:
+                valid_prices[symbol] = df["Close"]
+            else:
+                st.warning(f"⚠️ No price data found for {symbol}, skipping.")
+        except Exception as e:
+            st.warning(f"❌ Failed to fetch {symbol}: {e}")
+    return pd.DataFrame(valid_prices).dropna(axis=1, how='all')
 
 if submitted:
     try:
