@@ -1,8 +1,8 @@
 import streamlit as st
 
-st.set_page_config(page_title="MarketDashboard Home", layout="wide")
+st.set_page_config(page_title="MarketDashboard by TTZ/Pod -Home", layout="wide")
 
-st.title("📊 Welcome to MarketDashboard")
+st.title("📊 Welcome to MarketDashboard by TTZ/Pod")
 
 st.markdown("""
 This app gives you a powerful lens into market structure and ETF dynamics, including:
