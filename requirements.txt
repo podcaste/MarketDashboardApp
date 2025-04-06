@@ -8,3 +8,4 @@ openpyxl>=3.1  # Required for reading Excel ETF holdings
 plotly>=5.15
 seaborn>=0.12
 statsmodels>=0.14
+plotly>=5.15

@@ -3,15 +3,43 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import streamlit as st
 import time
-@st.cache_data
-def fetch_holdings(seasonality_ticker):
-    url = f"https://www.ssga.com/us/en/intermediary/library-content/products/fund-data/etfs/us/holdings-daily-us-en-{seasonality_ticker.lower()}.xlsx"
-    df = pd.read_excel(url, skiprows=3)
-    tickers = df.iloc[:, 1].dropna().astype(str)
-    tickers = [t.replace('/', '-').strip().upper() for t in tickers if t.isalpha()]
-    return tickers
 
 @st.cache_data
+def fetch_holdings(seasonality_ticker):
+    import pandas as pd
+
+    url = f"https://www.ssga.com/us/en/intermediary/library-content/products/fund-data/etfs/us/holdings-daily-us-en-{seasonality_ticker.lower()}.xlsx"
+
+    # Load raw Excel file
+    raw = pd.read_excel(url, header=None)
+
+    # Search for header row containing "Ticker" and "Weight"
+    header_row_idx = None
+    for i in range(len(raw)):
+        row = raw.iloc[i].astype(str).str.strip().str.lower()
+        if "ticker" in row.values and "weight" in row.values:
+            header_row_idx = i
+            break
+
+    if header_row_idx is None:
+        raise ValueError("Could not find header row with 'Ticker' and 'Weight'.")
+
+    # Set headers and extract data
+    headers = raw.iloc[header_row_idx].tolist()
+    data = raw.iloc[header_row_idx + 1:].copy()
+    data.columns = headers
+
+    # Clean and filter
+    if 'Ticker' not in data.columns or 'Weight' not in data.columns:
+        raise ValueError(f"Expected 'Ticker' and 'Weight' columns. Got: {data.columns.tolist()}")
+
+    df = data[['Ticker', 'Weight']].dropna()
+    df['Ticker'] = df['Ticker'].astype(str).str.strip().str.upper()
+    df['Weight'] = pd.to_numeric(df['Weight'], errors='coerce')
+    df = df[df['Ticker'].str.isalpha() & df['Weight'].notna()]
+
+    return df
+
 @st.cache_data
 def fetch_returns(tickers, benchmark, days=365):
     periods = {
