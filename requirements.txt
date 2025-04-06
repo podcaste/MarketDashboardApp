@@ -9,3 +9,4 @@ plotly>=5.15
 seaborn>=0.12
 statsmodels>=0.14
 plotly>=5.15
+statsmodels
