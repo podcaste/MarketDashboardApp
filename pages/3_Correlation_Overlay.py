@@ -8,6 +8,7 @@ from io import BytesIO
 
 st.set_page_config(page_title="Correlation Overlay", layout="wide")
 st.title("🔍 Correlation Overlay Visualizer")
+st.markdown("ℹ️ Use `^GSPC` for S&P 500 (SPX) and `^IXIC` for Nasdaq 100 (NDX).")
 
 # --- User Inputs ---
 ticker_input = st.text_input("Enter a ticker (e.g., ^GSPC, AAPL, BTC-USD):", value="^GSPC").upper()
