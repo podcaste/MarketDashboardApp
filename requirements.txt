@@ -11,3 +11,4 @@ statsmodels>=0.14
 wordcloud>=1.8
 textblob>=0.17
 beautifulsoup4>=4.12
+feedparser
