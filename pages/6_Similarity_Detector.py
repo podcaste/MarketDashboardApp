@@ -35,7 +35,7 @@ spy_holdings_url = "https://www.ssga.com/us/en/intermediary/library-content/prod
 def get_spy_constituents():
     df = pd.read_excel(spy_holdings_url, skiprows=3)
     tickers = df.iloc[:, 1].dropna().astype(str)
-    tickers = [t.replace('/', '-').strip().upper() for t in tickers if isinstance(t, str) and t.isalnum() and t.upper() not in ['TICKER', '-', 'NONE', ''] and len(t) <= 5]
+    tickers = [t.replace('/', '-').strip().upper() for t in tickers if isinstance(t, str) and t.isalnum() and t.upper() not in ['TICKER', '-', 'NONE'] and len(t) <= 5]
     tickers = [t for t in tickers if t != 'CTAS']  # Hard-code exclusion
     return sorted(list(set(tickers)))
 
