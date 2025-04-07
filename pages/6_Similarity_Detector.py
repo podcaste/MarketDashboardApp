@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from datetime import datetime, timedelta
+from utils.data_utils import download_batched
 
 st.set_page_config(page_title="ETF Similarity Detector", layout="wide")
 st.title("🔎 ETF Similarity Detector")
@@ -41,7 +42,18 @@ sector_etfs = ["XLB", "XLC", "XLE", "XLF", "XLI", "XLK", "XLP", "XLRE", "XLU", "
 
 @st.cache_data
 def download_price_data(tickers, start, end):
-    return yf.download(tickers, start=start, end=end, auto_adjust=True, progress=False)["Close"].dropna(axis=1, how='all')
+    price_data, failed = download_batched(
+        tickers,
+        start=start,
+        end=end,
+        auto_adjust=True
+    )
+    if isinstance(price_data.columns, pd.MultiIndex):
+        close_prices = price_data.xs('Close', axis=1, level=1)
+    else:
+        close_prices = price_data
+    return close_prices.dropna(axis=1, how='all')
+
 
 if submitted:
     try:
