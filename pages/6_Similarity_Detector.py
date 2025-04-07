@@ -131,10 +131,15 @@ if submitted:
         beta_std = beta_df[selected_symbols].std()
         beta_mean = beta_df[selected_symbols].mean()
 
+        safe_symbols = [s for s in selected_symbols if s in latest_corrs.index and s in beta_mean.index and s in beta_std.index]
+        if not safe_symbols:
+            st.warning("No reliable data found for selected tickers.")
+            st.stop()
+
         summary_df = pd.DataFrame({
-            "Mean Beta": beta_mean,
-            "Beta StdDev": beta_std,
-            "Latest Correlation": latest_corrs.loc[selected_symbols, "Rolling Correlation"]
+            "Mean Beta": beta_mean[safe_symbols],
+            "Beta StdDev": beta_std[safe_symbols],
+            "Latest Correlation": latest_corrs.loc[safe_symbols, "Rolling Correlation"]
         })
 
         fig_scatter = px.scatter(
