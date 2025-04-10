@@ -4,8 +4,14 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 from datetime import datetime, timedelta
+from inject_font import inject_custom_font,inject_sidebar_logo
 
+# --- Set config and font ---
 st.set_page_config(page_title="Sector Rotation Map", layout="wide")
+inject_custom_font()
+inject_sidebar_logo()
+
+# --- Page Title ---
 st.title("🔁 Sector Rotation Map")
 
 # --- Sector ETF Tickers ---
@@ -32,21 +38,27 @@ benchmark = "SPY"
 all_tickers = list(sector_etfs.keys()) + [benchmark]
 
 # --- User Controls ---
-st.sidebar.header("Settings")
-momentum_days = st.sidebar.slider("Momentum Period (days)", 5, 30, 10)
-strength_days = st.sidebar.slider("Relative Strength Period (days)", 10, 60, 30)
-history_days = st.sidebar.slider("Animation Lookback (days)", 10, 90, 30)
+st.markdown("### ⚙️ Settings")
+col1, col2, col3, col4, col5 = st.columns(5)
+with col1:
+    momentum_days = st.slider("Momentum Period (days)", 5, 30, 10, help="Number of days to calculate momentum")
+with col2:
+    strength_days = st.slider("Relative Strength Period (days)", 10, 60, 30, help="Lookback period to compare against benchmark")
+with col3:
+    history_days = st.slider("Animation Lookback (days)", 10, 90, 30, help="Number of trailing days to animate")
+with col4:
+    start_date = st.date_input("Start Date", value=datetime.today() - timedelta(days=120), help="Start date for fetching data")
+with col5:
+    end_date = st.date_input("End Date", value=datetime.today(), help="End date for fetching data")
 
 # --- Fetch Data ---
 @st.cache_data
-def fetch_sector_data(tickers, days_back):
-    end = datetime.today()
-    start = end - timedelta(days=days_back + 60)
+def fetch_sector_data(tickers, start, end):
     df = yf.download(tickers, start=start, end=end, auto_adjust=True, progress=False)["Close"]
     return df.dropna(how="all", axis=1)
 
 try:
-    price_data = fetch_sector_data(all_tickers, history_days + max(momentum_days, strength_days))
+    price_data = fetch_sector_data(all_tickers, start_date, end_date)
 
     frames = []
     for i in range(strength_days, len(price_data)):
@@ -104,14 +116,12 @@ try:
     fig.update_traces(textposition="top center")
     fig.update_layout(height=700, xaxis_title="Momentum (%)", yaxis_title="Relative Strength vs SPY (%)")
 
-        # Highlight biggest movers each day
+    # Highlight biggest movers each day
     latest_date = animated_df['Date'].max()
     latest_df = animated_df[animated_df['Date'] == latest_date].copy()
     latest_df['Distance'] = np.sqrt(latest_df['Momentum']**2 + latest_df['RelativeStrength']**2)
     top_mover = latest_df.loc[latest_df['Distance'].idxmax()]['ETF']
     fig.update_traces(marker=dict(line=dict(width=2, color="black")), selector=dict(name=top_mover))
-
-    
 
     st.plotly_chart(fig, use_container_width=True)
 

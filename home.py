@@ -1,7 +1,18 @@
 import streamlit as st
+from PIL import Image
+from inject_font import inject_custom_font
 
-st.set_page_config(page_title="MarketDashboard by TTZ/Pod -Home", layout="wide")
+# Set page config first
+st.set_page_config(page_title="MarketDashboard by TTZ/Pod - Home", layout="wide")
 
+# Inject custom font (Roboto or whatever you're using)
+inject_custom_font()
+
+# --- Add Logo at Top ---
+logo = Image.open("static/dash_logo.png")
+st.image(logo, width=250)  # You can tweak the width
+
+# --- Title & Intro ---
 st.title("📊 Welcome to MarketDashboard by TTZ/Pod")
 
 st.markdown("""

@@ -6,11 +6,16 @@ import matplotlib.ticker as ticker
 from datetime import datetime
 from scipy.stats import ttest_1samp
 import numpy as np
+from inject_font import inject_custom_font, inject_sidebar_logo
 
 st.set_page_config(page_title="Seasonality", layout="wide")
+inject_custom_font()
+inject_sidebar_logo()
 st.title("📅 Seasonality Analysis")
 
-seasonality_ticker = st.text_input("Enter the ticker to check seasonality:", "XBI").upper()
+# --- Ticker input ---
+st.markdown("### 🧮 Choose a Ticker")
+seasonality_ticker = st.text_input("Enter the ticker to check seasonality:", "XBI", help="Example: SPY, AAPL, XLK, etc.").upper()
 
 if seasonality_ticker:
     try:
@@ -38,6 +43,10 @@ if seasonality_ticker:
             midpoints = [c - d / 2 for c, d in zip(cumulative_days, trading_days_per_month)]
 
             # --- Seasonality Plot ---
+            st.markdown("---")
+            st.subheader("📈 Seasonality Chart")
+            st.caption("Shows cumulative average return through the year with ±1 SD bands. Overlays current year if data is available.")
+
             fig, ax = plt.subplots(figsize=(14, 7))
             ax.plot(seasonality.index, seasonality.values * 100, label='Historical Seasonality')
             ax.fill_between(seasonality.index, (lower_band * 100), (upper_band * 100), color='gray', alpha=0.3)
@@ -46,7 +55,6 @@ if seasonality_ticker:
                 ax.plot(current_year_data['TradingDayOfYear'], current_year_data['CumulativeReturns'] * 100,
                         label=f'{current_year} Returns')
 
-            # Apply x-axis formatting
             ax.set_xticks(midpoints)
             ax.set_xticklabels(month_labels)
             for day in cumulative_days:
@@ -62,6 +70,10 @@ if seasonality_ticker:
             st.pyplot(fig)
 
             # --- Half-Month Violin Plot ---
+            st.markdown("---")
+            st.subheader("🎻 Half-Month Return Distribution (Violin Plot)")
+            st.caption("Each half-month is colored based on t-test significance (Bonferroni adjusted). Blue = p < 0.05")
+
             chronological_half_months = ['Jan1H', 'Jan2H', 'Feb1H', 'Feb2H', 'Mar1H', 'Mar2H', 'Apr1H', 'Apr2H',
                                          'May1H', 'May2H', 'Jun1H', 'Jun2H', 'Jul1H', 'Jul2H', 'Aug1H', 'Aug2H',
                                          'Sep1H', 'Sep2H', 'Oct1H', 'Oct2H', 'Nov1H', 'Nov2H', 'Dec1H', 'Dec2H']
@@ -97,6 +109,10 @@ if seasonality_ticker:
             st.pyplot(fig2)
 
             # --- Sorted Bar Plot ---
+            st.markdown("---")
+            st.subheader("📊 Mean Return by Half-Month (Sorted Bar Chart)")
+            st.caption("Bars are blue if statistically significant vs zero (p < 0.05 after Bonferroni correction).")
+
             mean_returns = df.groupby('MonthHalf')['Returns'].mean()
             sorted_returns = mean_returns.sort_values(ascending=False)
 

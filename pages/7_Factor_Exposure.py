@@ -6,8 +6,12 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 from io import BytesIO
 import statsmodels.api as sm
+from inject_font import inject_custom_font, inject_sidebar_logo
 
 st.set_page_config(page_title="Factor Exposure Analyzer", layout="wide")
+inject_custom_font()
+inject_custom_font()
+
 st.title("🧪 Factor Exposure & Tilt Analyzer")
 
 st.markdown("""
@@ -29,7 +33,6 @@ You’ll see:
 - A **scatterplot** comparing correlation and beta per factor
 - **Rolling beta volatility** showing factor stability
 - **Rolling alpha**: how much return is left after accounting for beta exposure
-- **Factor Sharpe Ratios**: performance per unit of volatility for each factor
 - **Multi-factor regression summary and visual plot of coefficients**
 """)
 
@@ -57,7 +60,6 @@ selected_factors = st.multiselect(
     default=list(factor_etfs.keys()),
     format_func=lambda x: f"{x} ({factor_etfs[x]})"
 )
-
 
 if ticker:
     try:
@@ -172,12 +174,6 @@ if ticker:
             fig_alpha = px.line(alpha_est, labels={"value": "Alpha", "index": "Date"})
             fig_alpha.update_layout(title="Rolling Alpha (Residual Return)", showlegend=False)
             st.plotly_chart(fig_alpha, use_container_width=True)
-
-            # --- Sharpe Ratios for Factors ---
-            st.subheader("📊 Factor Sharpe Ratios")
-            st.caption("Measures return per unit of risk (volatility) for each factor ETF.")
-            sharpe = returns[list(factor_labels)].rename(columns=factor_labels).mean() / returns[list(factor_labels)].std()
-            st.dataframe(sharpe.round(3).rename("Sharpe Ratio"))
 
             # --- OLS Regression Summary ---
             st.subheader("📘 Multi-Factor Regression")

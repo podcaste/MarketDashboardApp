@@ -5,15 +5,26 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from io import BytesIO
+from inject_font import inject_custom_font, inject_sidebar_logo
 
 st.set_page_config(page_title="Correlation Overlay", layout="wide")
+inject_custom_font()
+inject_sidebar_logo()
 st.title("🔍 Correlation Overlay Visualizer")
-st.markdown("ℹ️ Use `^GSPC` for S&P 500 (SPX) and `^IXIC` for Nasdaq 100 (NDX).")
+
+st.markdown("""
+Use this tool to compare historical windows of price behavior to the most recent window and identify similar periods based on **rolling correlation**.
+
+ℹ️ Example tickers:
+- `^GSPC` for S&P 500 (SPX)
+- `^IXIC` for Nasdaq Composite (NDX)
+- `AAPL`, `TSLA`, `BTC-USD` also work.
+""")
 
 # --- User Inputs ---
-ticker_input = st.text_input("Enter a ticker (e.g., ^GSPC, AAPL, BTC-USD):", value="^GSPC").upper()
-correlation_threshold = st.slider("Correlation Cutoff", min_value=0.1, max_value=0.99, value=0.5, step=0.01)
-window_size = st.slider("Number of Days to Track (Rolling Window)", min_value=30, max_value=500, value=151, step=1)
+ticker_input = st.text_input("Enter a Ticker:", value="^GSPC", help="You can enter index, stock, or crypto tickers.").upper()
+correlation_threshold = st.slider("Correlation Threshold", min_value=0.1, max_value=0.99, value=0.5, step=0.01, help="Minimum correlation required to include a historical window")
+window_size = st.slider("Rolling Window Size (Days)", min_value=30, max_value=500, value=151, step=1, help="Window size used to compute correlation")
 
 reference_size = window_size
 start_date = "1940-01-01"
@@ -35,9 +46,7 @@ if ticker_input:
 
                 for i in range(len(daily_close) - window_size + 1):
                     window = daily_close.iloc[i:i + window_size].copy()
-
-                    # Ensure both are same length and non-empty
-                    if len(window) == len(reference_df) and len(window) > 1:
+                    if len(window) == len(reference_df):
                         aligned = pd.concat([
                             window.reset_index(drop=True),
                             reference_df.reset_index(drop=True)
@@ -57,16 +66,14 @@ if ticker_input:
                 if not correlation_df.empty:
                     correlation_df['Year'] = correlation_df['Start_Date'].dt.year
                     correlation_df = correlation_df.groupby('Year').apply(lambda x: x.loc[x['Correlation_Value'].idxmax()]).reset_index(drop=True)
-                    correlation_df = correlation_df[:-1]  # drop last row to prevent overlap
+                    correlation_df = correlation_df[:-1]
                     correlation_df = correlation_df.sort_values(by='Correlation_Value', ascending=False).head(7)
 
-                    # Normalize for opacity and linewidth
                     corr_min = correlation_threshold
                     corr_max = correlation_df['Correlation_Value'].max()
                     correlation_df['Normalized_Correlation'] = 0.5 + 0.5 * (correlation_df['Correlation_Value'] - corr_min) / (corr_max - corr_min)
                     correlation_df['LineWidth'] = 1 + 2 * (correlation_df['Correlation_Value'] - corr_min) / (corr_max - corr_min)
 
-                    # Preload window data
                     fetched_data = {}
                     unique_date_ranges = correlation_df[['Start_Date', 'End_Date']].drop_duplicates()
 
@@ -78,7 +85,6 @@ if ticker_input:
                             if not series.empty:
                                 fetched_data[key] = series / series.iloc[0] * 100
 
-                    # --- Plotting ---
                     fig, ax = plt.subplots(figsize=(14, 7))
                     ax.set_facecolor('white')
                     ax.grid(color='gray', linestyle='--', linewidth=0.5)
@@ -110,7 +116,6 @@ if ticker_input:
 
                     st.pyplot(fig)
 
-                    # --- Export buttons ---
                     st.markdown("### 📥 Export Options")
 
                     csv_bytes = correlation_df.to_csv(index=False).encode('utf-8')

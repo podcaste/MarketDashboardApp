@@ -10,10 +10,12 @@ from textblob import TextBlob
 import requests
 from bs4 import BeautifulSoup
 import re
+from inject_font import inject_custom_font, inject_sidebar_logo
 
 st.set_page_config(page_title="📰 News Sentiment Analyzer", layout="wide")
 st.title("📰 News-Driven Sentiment Analysis")
-
+inject_custom_font()
+inject_custom_font()
 st.markdown("""
 This tool pulls recent headlines from multiple free sources (Yahoo Finance, Finviz, and Seeking Alpha) and scores them using TextBlob for sentiment.
 

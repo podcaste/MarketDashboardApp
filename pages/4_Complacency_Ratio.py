@@ -3,14 +3,27 @@ import yfinance as yf
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
+from inject_font import inject_custom_font, inject_sidebar_logo
 
+# --- Set config FIRST ---
 st.set_page_config(page_title="Complacency Ratio", layout="wide")
+
+# Inject custom font after config
+inject_custom_font()
+inject_sidebar_logo()
+# --- Page Title & Description ---
 st.title("😌 Complacency Ratio Dashboard (VVIX / VIX)")
+st.caption("This tool visualizes market complacency by tracking the ratio of VVIX to VIX. Breakdowns below the lower bound often precede market inflection points.")
 
 # --- Date selection ---
-default_start = "2021-11-09"
-start_date = st.date_input("Start Date", value=pd.to_datetime(default_start), key="start_date")
-end_date = datetime.today()
+st.markdown("### ⚙️ Configuration")
+col1, col2 = st.columns(2)
+with col1:
+    default_start = "2021-11-09"
+    start_date = st.date_input("Start Date", value=pd.to_datetime(default_start), key="start_date", help="Start date for analysis (default: Nov 2021)")
+with col2:
+    end_date = datetime.today()
+    st.markdown(f"**End Date:** {end_date.strftime('%Y-%m-%d')}")
 
 # --- Download data ---
 tickers = ["^VVIX", "^VIX", "^GSPC"]
@@ -48,7 +61,6 @@ else:
     axs[0].set_ylabel("Complacency Ratio")
     axs[0].legend(fontsize=12, frameon=True, loc="upper right")
     axs[0].grid(True, linestyle="--", alpha=0.5)
-    axs[0].set_facecolor("#f9f9f9")
 
     # --- Lower Chart: SPX ---
     axs[1].plot(data.index, data["SPX"], label="S&P 500 (SPX)", color="#2ca02c", linewidth=1.5)
@@ -60,10 +72,18 @@ else:
     axs[1].set_xlabel("Date")
     axs[1].legend(fontsize=12, frameon=True, loc="upper left")
     axs[1].grid(True, linestyle="--", alpha=0.5)
-    axs[1].set_facecolor("#f9f9f9")
 
     plt.tight_layout()
     st.pyplot(fig)
+
+    # --- Explanation ---
+    st.markdown("""
+    🔍 **How to Read This Chart**
+
+    - The **Complacency Ratio** (VVIX/VIX) helps gauge the volatility-of-volatility vs. vanilla volatility.
+    - The ±1.67 SD band around the 50-day moving average highlights abnormal breakdowns.
+    - **Vertical green lines** show moments where complacency dips significantly below normal, potentially indicating **fear-driven market bottoms**.
+    """)
 
     # --- Export Options ---
     st.markdown("### 📥 Export Data")
