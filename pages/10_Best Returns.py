@@ -21,7 +21,7 @@ with col1:
     st.markdown("Choose any stock or index ticker, like **^IXIC (NASDAQ)**, **SPY**, **AAPL**, etc.")
     ticker = st.text_input("Ticker Symbol", value="^IXIC", help="Enter a Yahoo Finance ticker symbol (e.g. ^IXIC, SPY, AAPL)")
 with col2:
-    start_date = st.date_input("Start Date", value=pd.to_datetime("1970-01-01"), help="The date to begin pulling historical data from")
+    start_date = st.date_input("Start Date", value=pd.to_datetime("1920-01-01"), help="The date to begin pulling historical data from")
 with col3:
     end_date = st.date_input("End Date", value=pd.to_datetime("today"), help="The final date for historical data (defaults to today)")
 

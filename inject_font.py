@@ -15,8 +15,15 @@ def inject_custom_font():
         </style>
     """, unsafe_allow_html=True)
 
-def inject_sidebar_logo(path="static/dash_logo.png", width=160):
+def inject_sidebar_logo():
     with st.sidebar:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.image(path, width=width)
-        st.markdown("<hr style='margin-top:1em;margin-bottom:1em;'>", unsafe_allow_html=True)
+        st.markdown("### ")
+        st.markdown(
+            """
+            <a href='/' target='_self'>
+                <img src='assets/dash_logo.png' style='width:100%; margin-bottom:10px;' />
+            </a>
+            <hr style='margin-top:10px;'>
+            """,
+            unsafe_allow_html=True
+        )
