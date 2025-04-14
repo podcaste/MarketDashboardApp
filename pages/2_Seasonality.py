@@ -42,6 +42,10 @@ if seasonality_ticker:
             cumulative_days = np.cumsum(trading_days_per_month)
             midpoints = [c - d / 2 for c, d in zip(cumulative_days, trading_days_per_month)]
 
+            # --- Toggle for highlight lines ---
+            show_highlow = st.toggle("Highlight Max/Min Points on Seasonality Curve", value=True)
+            show_verticals = st.toggle("Show Vertical Lines on Peak/Valley Days", value=False)
+
             # --- Seasonality Plot ---
             st.markdown("---")
             st.subheader("📈 Seasonality Chart")
@@ -50,6 +54,16 @@ if seasonality_ticker:
             fig, ax = plt.subplots(figsize=(14, 7))
             ax.plot(seasonality.index, seasonality.values * 100, label='Historical Seasonality')
             ax.fill_between(seasonality.index, (lower_band * 100), (upper_band * 100), color='gray', alpha=0.3)
+
+            if show_highlow:
+                max_idx = seasonality.idxmax()
+                min_idx = seasonality.idxmin()
+                ax.axhline(seasonality[max_idx] * 100, color='blue', linestyle='--', linewidth=1, label='Max Point')
+                ax.axhline(seasonality[min_idx] * 100, color='red', linestyle='--', linewidth=1, label='Min Point')
+
+                if show_verticals:
+                    ax.axvline(max_idx, color='blue', linestyle='--', linewidth=1, label='Day of Max')
+                    ax.axvline(min_idx, color='red', linestyle='--', linewidth=1, label='Day of Min')
 
             if not current_year_data.empty:
                 ax.plot(current_year_data['TradingDayOfYear'], current_year_data['CumulativeReturns'] * 100,

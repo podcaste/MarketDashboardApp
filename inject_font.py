@@ -21,7 +21,7 @@ def inject_sidebar_logo():
         st.markdown(
             """
             <a href='/' target='_self'>
-                <img src='public/dash_logo.png' style='width:100%; margin-bottom:10px;' />
+                <img src='/public/dash_logo.png' style='width:100%; margin-bottom:10px;' />
             </a>
             <hr style='margin-top:10px;'>
             """,
